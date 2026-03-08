@@ -13,7 +13,7 @@
     </parent>
 
     <artifactId>restaurant-service</artifactId>
-    <n>Restaurant Service</n>
+    <name>Restaurant Service</name>
     <description>
         Manages restaurants and menus.
         Exposes menu item validation endpoint consumed by Order Service via Feign.
