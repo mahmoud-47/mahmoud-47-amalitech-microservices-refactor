@@ -47,17 +47,21 @@ System is ready when all services appear in Eureka at `http://localhost:8761`.
 ---
 
 ## Project Structure
-
 ```
 food-delivery-platform/
-├── shared-library/        # Shared events, DTOs, exceptions
-├── config-server/         # Centralized config (port 8888)
-├── eureka-server/         # Service registry (port 8761)
-├── api-gateway/           # Gateway + JWT auth + rate limiting (port 8080)
-├── customer-service/      # Customer management + auth (port 8081)
-├── restaurant-service/    # Restaurant + menu management (port 8082)
-├── order-service/         # Order processing + outbox (port 8083)
-├── delivery-service/      # Delivery tracking (port 8084)
+├── shared/
+│   └── common-utils/          # Shared events, DTOs, exceptions
+├── config/
+│   └── config-service/        # Centralized config (port 8888)
+├── discovery/
+│   └── discovery-service/     # Service registry (port 8761)
+├── gateway/
+│   └── api-gateway/           # Gateway + JWT auth + rate limiting (port 8080)
+├── services/
+│   ├── customer-service/      # Customer management + auth (port 8081)
+│   ├── restaurant-service/    # Restaurant + menu management (port 8082)
+│   ├── order-service/         # Order processing + outbox (port 8083)
+│   └── delivery-service/      # Delivery tracking (port 8084)
 ├── docker-compose.yml
 └── pom.xml
 ```
