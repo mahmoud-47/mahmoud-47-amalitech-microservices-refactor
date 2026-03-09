@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.function.Function;
 
 @Component
-public class JwtAuthenticationFilter implements GlobalFilter, WebFilter, Ordered {
+public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     private final JwtUtil jwtUtil;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
@@ -32,10 +32,10 @@ public class JwtAuthenticationFilter implements GlobalFilter, WebFilter, Ordered
             "/h2-console/**",
             "/actuator/**",
             "/api/restaurants/search/**",
-            "/api/restaurants/*/menu",
             "/hello/**",
             "/api/customers/hello-customer",
-            "/api/orders/hello-customer"
+            "/api/orders/hello-customer",
+            "/fallback/**"
     );
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil) {
@@ -43,10 +43,10 @@ public class JwtAuthenticationFilter implements GlobalFilter, WebFilter, Ordered
     }
 
     // Called by Spring Security
-    @Override
-    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        return doFilter(exchange, chain::filter);
-    }
+//    Override
+//    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+//        return doFilter(exchange, chain::filter);
+//    }
 
     // Called by Spring Cloud Gateway
     @Override
@@ -57,7 +57,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, WebFilter, Ordered
     private Mono<Void> doFilter(ServerWebExchange exchange,
                                 Function<ServerWebExchange, Mono<Void>> next) {
         String path = exchange.getRequest().getPath().toString();
-
+        System.out.println("***** 123");
         if (isPublicPath(path)) {
             return next.apply(exchange);
         }
@@ -67,20 +67,24 @@ public class JwtAuthenticationFilter implements GlobalFilter, WebFilter, Ordered
                 .getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("*** Bearer not around");
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
+        System.out.println("*** Bearer around");
 
         String token = authHeader.substring(7);
 
         if (!jwtUtil.validateToken(token)) {
+            System.out.println("*** jwt not ok");
             exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
             return exchange.getResponse().setComplete();
         }
+        System.out.println("*** jwt not ok");
 
         String username = jwtUtil.extractUsername(token);
         String role     = jwtUtil.extractRole(token);
-
+        System.out.println("*** username = " + username + " role = " + role);
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
                         username,

@@ -1,46 +1,74 @@
 package com.fooddelivery.orderservice.controller;
 
 import com.fooddelivery.commonutils.dto.ApiResponse;
-import com.fooddelivery.orderservice.client.CustomerClient;
-import com.fooddelivery.orderservice.messaging.HelloEventPublisher;
+import com.fooddelivery.commonutils.dto.SharedOrderResponse;
+import com.fooddelivery.orderservice.dto.OrderResponse;
+import com.fooddelivery.orderservice.dto.PlaceOrderRequest;
+import com.fooddelivery.orderservice.service.OrderService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
-@RequestMapping("/api/orders")
 public class OrderController {
 
-    private final CustomerClient customerClient;
-    private final HelloEventPublisher helloEventPublisher;
+    private final OrderService orderService;
 
-    public OrderController(CustomerClient customerClient,
-                           HelloEventPublisher helloEventPublisher) {
-        this.customerClient = customerClient;
-        this.helloEventPublisher = helloEventPublisher;
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
     }
 
-    // Smoke test — calls customer-service /hello via Feign, forwarding identity
-    @GetMapping("/hello-customer")
-    public ResponseEntity<ApiResponse<Void>> helloCustomer(
-            @RequestHeader(value = "X-Authenticated-User-Id", required = false) String userId,
-            @RequestHeader(value = "X-Authenticated-User-Role", required = false) String role) {
-
-        ApiResponse<Void> response = customerClient.hello(userId, role);
-        return ResponseEntity.ok(response);
+    // ── Customer endpoints ────────────────────────────────────────────────────
+    @PostMapping("/api/orders")
+    public ResponseEntity<ApiResponse<OrderResponse>> placeOrder(
+            @RequestHeader("X-Authenticated-User-Id") String username,
+            @Valid @RequestBody PlaceOrderRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok("Order placed",
+                orderService.placeOrder(username, request)));
     }
 
-    // Publishes a HelloEvent to RabbitMQ — customer-service will consume it
-    @PostMapping("/say-hello")
-    public ResponseEntity<ApiResponse<Void>> sayHello(
-            @RequestHeader("X-Authenticated-User-Id") String userId) {
+    @GetMapping("/api/orders/my")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getMyOrders(
+            @RequestHeader("X-Authenticated-User-Id") String username) {
+        return ResponseEntity.ok(ApiResponse.ok("Orders fetched",
+                orderService.getCustomerOrders(username)));
+    }
 
-        helloEventPublisher.publishHello(userId);
-        return ResponseEntity.ok(
-                ApiResponse.ok("HelloEvent published for user: " + userId)
-        );
+    @GetMapping("/api/orders/{id}")
+    public ResponseEntity<ApiResponse<OrderResponse>> getById(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.ok("Order fetched",
+                orderService.getById(id)));
+    }
+
+    @PatchMapping("/api/orders/{id}/cancel")
+    public ResponseEntity<ApiResponse<OrderResponse>> cancel(
+            @PathVariable Long id,
+            @RequestHeader("X-Authenticated-User-Id") String username) {
+        return ResponseEntity.ok(ApiResponse.ok("Order cancelled",
+                orderService.cancelOrder(id, username)));
+    }
+
+    // ── Restaurant-facing ─────────────────────────────────────────────────────
+    @GetMapping("/api/orders/restaurant/{restaurantId}")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getRestaurantOrders(
+            @PathVariable Long restaurantId) {
+        return ResponseEntity.ok(ApiResponse.ok("Orders fetched",
+                orderService.getRestaurantOrders(restaurantId)));
+    }
+
+    @PatchMapping("/api/orders/{id}/status")
+    public ResponseEntity<ApiResponse<OrderResponse>> updateStatus(
+            @PathVariable Long id,
+            @RequestParam String status) {
+        return ResponseEntity.ok(ApiResponse.ok("Status updated",
+                orderService.updateStatus(id, status)));
+    }
+
+    // ── Internal endpoint — called by Delivery Service via Feign ─────────────
+    @GetMapping("/internal/orders/{id}")
+    public ResponseEntity<SharedOrderResponse> getSharedOrder(@PathVariable Long id) {
+        return ResponseEntity.ok(orderService.getSharedById(id));
     }
 }

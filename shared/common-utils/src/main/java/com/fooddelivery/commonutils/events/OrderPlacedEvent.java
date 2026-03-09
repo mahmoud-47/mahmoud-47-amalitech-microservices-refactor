@@ -16,6 +16,7 @@ public class OrderPlacedEvent {
     private Long orderId;
     private Long customerId;
     private Long restaurantId;
+    private String restaurantName;
     private String deliveryAddress;
     private String restaurantAddress;   // snapshot so Delivery Service needs no Feign call
     private BigDecimal totalAmount;

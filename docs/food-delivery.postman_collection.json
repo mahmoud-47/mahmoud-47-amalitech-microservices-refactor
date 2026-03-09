@@ -1,0 +1,284 @@
+{
+  "info": {
+    "name": "Food Delivery Platform",
+    "_postman_id": "food-delivery-microservices",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl",  "value": "http://localhost:8080" },
+    { "key": "token",    "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var json = pm.response.json();",
+            "if (json.data && json.data.token) { pm.collectionVariables.set('token', json.data.token); }"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/register", "host": ["{{baseUrl}}"], "path": ["api","auth","register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phone\": \"+1-555-0199\",\n  \"deliveryAddress\": \"123 Main St\",\n  \"city\": \"New York\"\n}" }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var json = pm.response.json();",
+            "if (json.data && json.data.token) { pm.collectionVariables.set('token', json.data.token); }"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api","auth","login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"john_doe\",\n  \"password\": \"password123\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Customers",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/customers/me", "host": ["{{baseUrl}}"], "path": ["api","customers","me"] }
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/customers/me", "host": ["{{baseUrl}}"], "path": ["api","customers","me"] },
+            "body": { "mode": "raw", "raw": "{\n  \"firstName\": \"Johnny\",\n  \"city\": \"Brooklyn\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Restaurants",
+      "item": [
+        {
+          "name": "Get All Active",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/restaurants", "host": ["{{baseUrl}}"], "path": ["api","restaurants"] }
+          }
+        },
+        {
+          "name": "Get By ID",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/restaurants/1", "host": ["{{baseUrl}}"], "path": ["api","restaurants","1"] }
+          }
+        },
+        {
+          "name": "Search By City",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/restaurants/search/city?city=New York",
+              "host": ["{{baseUrl}}"], "path": ["api","restaurants","search","city"],
+              "query": [{ "key": "city", "value": "New York" }]
+            }
+          }
+        },
+        {
+          "name": "Search By Cuisine",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/restaurants/search/cuisine?cuisine=Italian",
+              "host": ["{{baseUrl}}"], "path": ["api","restaurants","search","cuisine"],
+              "query": [{ "key": "cuisine", "value": "Italian" }]
+            }
+          }
+        },
+        {
+          "name": "Get Menu",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/restaurants/1/menu", "host": ["{{baseUrl}}"], "path": ["api","restaurants","1","menu"] }
+          }
+        },
+        {
+          "name": "Create Restaurant (Owner)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/restaurants", "host": ["{{baseUrl}}"], "path": ["api","restaurants"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Pasta Palace\",\n  \"description\": \"Authentic Italian\",\n  \"cuisineType\": \"Italian\",\n  \"address\": \"456 Elm St\",\n  \"city\": \"New York\",\n  \"phone\": \"+1-555-0200\",\n  \"estimatedDeliveryMinutes\": 30\n}" }
+          }
+        },
+        {
+          "name": "Add Menu Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/restaurants/1/menu", "host": ["{{baseUrl}}"], "path": ["api","restaurants","1","menu"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Spaghetti Carbonara\",\n  \"description\": \"Classic Roman pasta\",\n  \"price\": 14.99,\n  \"category\": \"Pasta\",\n  \"imageUrl\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Toggle Menu Item Availability",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/restaurants/menu-items/1/toggle", "host": ["{{baseUrl}}"], "path": ["api","restaurants","menu-items","1","toggle"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Place Order",
+          "event": [{ "listen": "test", "script": { "exec": [
+            "var json = pm.response.json();",
+            "if (json.data && json.data.id) { pm.collectionVariables.set('orderId', json.data.id); }"
+          ], "type": "text/javascript" }}],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "{{baseUrl}}/api/orders", "host": ["{{baseUrl}}"], "path": ["api","orders"] },
+            "body": { "mode": "raw", "raw": "{\n  \"restaurantId\": 1,\n  \"items\": [\n    { \"menuItemId\": 1, \"quantity\": 2, \"specialInstructions\": \"Extra cheese\" },\n    { \"menuItemId\": 2, \"quantity\": 1 }\n  ],\n  \"deliveryAddress\": \"789 Oak Ave\",\n  \"specialInstructions\": \"Ring doorbell\"\n}" }
+          }
+        },
+        {
+          "name": "My Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/orders/my", "host": ["{{baseUrl}}"], "path": ["api","orders","my"] }
+          }
+        },
+        {
+          "name": "Get Order By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/orders/{{orderId}}", "host": ["{{baseUrl}}"], "path": ["api","orders","{{orderId}}"] }
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/orders/{{orderId}}/cancel", "host": ["{{baseUrl}}"], "path": ["api","orders","{{orderId}}","cancel"] }
+          }
+        },
+        {
+          "name": "Update Order Status (Restaurant)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/orders/{{orderId}}/status?status=CONFIRMED",
+              "host": ["{{baseUrl}}"], "path": ["api","orders","{{orderId}}","status"],
+              "query": [{ "key": "status", "value": "CONFIRMED" }]
+            }
+          }
+        },
+        {
+          "name": "Get Restaurant Orders",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/orders/restaurant/1", "host": ["{{baseUrl}}"], "path": ["api","orders","restaurant","1"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Deliveries",
+      "item": [
+        {
+          "name": "Get Delivery By Order",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/deliveries/order/{{orderId}}", "host": ["{{baseUrl}}"], "path": ["api","deliveries","order","{{orderId}}"] }
+          }
+        },
+        {
+          "name": "Get Delivery By ID",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/deliveries/1", "host": ["{{baseUrl}}"], "path": ["api","deliveries","1"] }
+          }
+        },
+        {
+          "name": "Update Delivery Status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/api/deliveries/1/status?status=PICKED_UP",
+              "host": ["{{baseUrl}}"], "path": ["api","deliveries","1","status"],
+              "query": [{ "key": "status", "value": "PICKED_UP" }]
+            }
+          }
+        },
+        {
+          "name": "Get By Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{baseUrl}}/api/deliveries/status/ASSIGNED", "host": ["{{baseUrl}}"], "path": ["api","deliveries","status","ASSIGNED"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Gateway Health",
+          "request": { "method": "GET", "url": { "raw": "{{baseUrl}}/actuator/health", "host": ["{{baseUrl}}"], "path": ["actuator","health"] } }
+        },
+        {
+          "name": "Customer Service Health",
+          "request": { "method": "GET", "url": { "raw": "http://localhost:8081/actuator/health", "host": ["http://localhost:8081"], "path": ["actuator","health"] } }
+        },
+        {
+          "name": "Restaurant Service Health",
+          "request": { "method": "GET", "url": { "raw": "http://localhost:8082/actuator/health", "host": ["http://localhost:8082"], "path": ["actuator","health"] } }
+        },
+        {
+          "name": "Order Service Health",
+          "request": { "method": "GET", "url": { "raw": "http://localhost:8083/actuator/health", "host": ["http://localhost:8083"], "path": ["actuator","health"] } }
+        },
+        {
+          "name": "Delivery Service Health",
+          "request": { "method": "GET", "url": { "raw": "http://localhost:8084/actuator/health", "host": ["http://localhost:8084"], "path": ["actuator","health"] } }
+        },
+        {
+          "name": "Eureka Dashboard",
+          "request": { "method": "GET", "url": { "raw": "http://localhost:8761", "host": ["http://localhost:8761"] } }
+        }
+      ]
+    }
+  ]
+}

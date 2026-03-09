@@ -35,6 +35,10 @@ public class OrderItem {
 
     private String specialInstructions;
 
+    // Snapshot of menu item name at order time — avoids cross-domain reads
+    @Column(nullable = false)
+    private String itemName;
+
     // ---- SAME-DOMAIN RELATIONSHIP (fine for Order Service) ----
 
     @ManyToOne(fetch = FetchType.LAZY)

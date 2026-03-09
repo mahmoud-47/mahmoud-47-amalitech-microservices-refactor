@@ -4,83 +4,107 @@ server:
 app:
   jwt:
     secret: ${JWT_SECRET:my-super-secret-key-that-is-long-enough-for-hs256}
-    expiration-ms: 86400000  # 24 hours
+    expiration-ms: 86400000
 
 spring:
   data:
     redis:
-      host: localhost
+      host: ${REDIS_HOST:localhost}
       port: 6379
       password: ${REDIS_PASSWORD:redis123}
 
-#  data:
-#    redis:
-#      host: ${REDIS_HOST:localhost}
-#      port: 6379
-#      password: ${REDIS_PASSWORD:redis123}
-
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
-      routes:
-        - id: customer-service
-          uri: lb://customer-service
-          predicates:
-            - Path=/api/customers/**,/api/auth/**
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: false
+              lower-case-service-id: true
+          routes:
+            - id: customer-service
+              uri: lb://customer-service
+              predicates:
+                - Path=/api/customers/**,/api/auth/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: customer-service
+                    fallbackUri: forward:/fallback/customer-service
 
-        - id: restaurant-service
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/api/restaurants/**
+            - id: restaurant-service
+              uri: lb://restaurant-service
+              predicates:
+                - Path=/api/restaurants/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: restaurant-service
+                    fallbackUri: forward:/fallback/restaurant-service
 
-        - id: order-service
-          uri: lb://order-service
-          predicates:
-            - Path=/api/orders/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 10
-                redis-rate-limiter.burstCapacity: 20
-                redis-rate-limiter.requestedTokens: 1
-                key-resolver: "#{@userKeyResolver}"
+            - id: order-service
+              uri: lb://order-service
+              predicates:
+                - Path=/api/orders/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: order-service
+                    fallbackUri: forward:/fallback/order-service
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 10
+                    redis-rate-limiter.burstCapacity: 20
+                    redis-rate-limiter.requestedTokens: 1
+                    key-resolver: "#{@userKeyResolver}"
 
-        - id: delivery-service
-          uri: lb://delivery-service
-          predicates:
-            - Path=/api/deliveries/**
+            - id: delivery-service
+              uri: lb://delivery-service
+              predicates:
+                - Path=/api/deliveries/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: delivery-service
+                    fallbackUri: forward:/fallback/delivery-service
 
-        # ── Smoke test hello routes ───────────────────────────────────────────
-        - id: customer-hello
-          uri: lb://customer-service
-          predicates:
-            - Path=/hello/customer
-          filters:
-            - RewritePath=/hello/customer, /hello
-
-        - id: restaurant-hello
-          uri: lb://restaurant-service
-          predicates:
-            - Path=/hello/restaurant
-          filters:
-            - RewritePath=/hello/restaurant, /hello
-
-        - id: order-hello
-          uri: lb://order-service
-          predicates:
-            - Path=/hello/order
-          filters:
-            - RewritePath=/hello/order, /hello
-
-        - id: delivery-hello
-          uri: lb://delivery-service
-          predicates:
-            - Path=/hello/delivery
-          filters:
-            - RewritePath=/hello/delivery, /hello
+resilience4j:
+  circuitbreaker:
+    instances:
+      customer-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+      restaurant-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+      order-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+      delivery-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+  timelimiter:
+    instances:
+      customer-service:
+        timeout-duration: 5s
+      restaurant-service:
+        timeout-duration: 5s
+      order-service:
+        timeout-duration: 5s
+      delivery-service:
+        timeout-duration: 5s
 
 eureka:
   client:
@@ -93,11 +117,11 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,gateway
+        include: health,info,gateway,circuitbreakers
 
 logging:
   level:
     org.springframework.security: TRACE
     org.springframework.cloud.gateway: TRACE
     org.springframework.web: DEBUG
-    com.fooddelivery.apigateway: DEBUG   # your own package
+    com.fooddelivery.apigateway: DEBUG

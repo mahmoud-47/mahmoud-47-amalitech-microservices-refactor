@@ -28,21 +28,10 @@ public class SecurityConfig {
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
                 .formLogin(ServerHttpSecurity.FormLoginSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-//                        .pathMatchers("/api/orders/hello-customer").permitAll()
-//
-//
-//
-//                        .pathMatchers("/api/auth/**").permitAll()
-//                        .pathMatchers("/h2-console/**").permitAll()
-//                        .pathMatchers("/actuator/**").permitAll()
-//                        .pathMatchers("/api/restaurants/search/**").permitAll()
-//                        .pathMatchers("/api/restaurants/*/menu").permitAll()
-//                        .pathMatchers("/hello/**").permitAll()
-                        // All other requests must have authentication set by JwtAuthenticationFilter
-                        .anyExchange().permitAll()
-                )
+                    .anyExchange().permitAll()
+                );
                 // Run JWT filter before Spring Security's own authentication step
-                .addFilterBefore(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION);
+//                .addFilterBefore(jwtAuthFilter, SecurityWebFiltersOrder.AUTHENTICATION);
 
         return http.build();
     }

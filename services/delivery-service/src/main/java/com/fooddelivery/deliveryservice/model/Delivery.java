@@ -2,22 +2,13 @@ package com.fooddelivery.deliveryservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
 
 /**
- * Delivery entity — part of the Delivery domain.
+ * All address data and IDs are populated from OrderPlacedEvent
+ * at creation time — no cross-domain Feign calls needed at read time.
  *
- * MONOLITH PROBLEM: Direct @OneToOne to Order entity and
- * delivery assignment happens SYNCHRONOUSLY inside the
- * OrderService.placeOrder() method. This blocks the order
- * response until delivery is assigned.
- *
- * In microservices:
- *  - Store orderId as a Long reference
- *  - Delivery Service subscribes to OrderPlacedEvent via RabbitMQ
- *  - Assignment happens ASYNCHRONOUSLY after the order is confirmed
- *  - Delivery Service publishes DeliveryStatusUpdatedEvent
+ * restaurantName is snapshotted from the event for display purposes.
  */
 @Entity
 @Table(name = "deliveries")
@@ -40,19 +31,20 @@ public class Delivery {
     private String pickupAddress;
     private String deliveryAddress;
 
+    // Snapshot from OrderPlacedEvent — avoids read-time Feign calls
+    private Long customerId;
+    private Long restaurantId;
+    private String restaurantName;  // snapshotted at creation
+
+    @Column(nullable = false)
+    private Long orderId;
+
     private LocalDateTime assignedAt;
     private LocalDateTime pickedUpAt;
     private LocalDateTime deliveredAt;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-
-    // ---- CROSS-DOMAIN RELATIONSHIP (monolith anti-pattern) ----
-
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "order_id", nullable = false, unique = true)
-//    private Order order;
-    private Long orderId;
 
     @PrePersist
     protected void onCreate() {

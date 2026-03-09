@@ -2,7 +2,6 @@ package com.fooddelivery.deliveryservice.dto;
 
 import com.fooddelivery.deliveryservice.model.Delivery;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 @Data
@@ -18,11 +17,12 @@ public class DeliveryResponse {
     private LocalDateTime deliveredAt;
     private LocalDateTime createdAt;
 
-    // MONOLITH: cross-domain order info embedded
+    // IDs only — no cross-domain entity traversal
     private Long orderId;
-    private String orderStatus;
     private Long customerId;
-    private String customerName;
+
+    // Snapshotted at delivery creation time from the OrderPlacedEvent
+    // No Feign call needed at read time
     private String restaurantName;
 
     public static DeliveryResponse fromEntity(Delivery d) {
@@ -37,14 +37,9 @@ public class DeliveryResponse {
         dto.setPickedUpAt(d.getPickedUpAt());
         dto.setDeliveredAt(d.getDeliveredAt());
         dto.setCreatedAt(d.getCreatedAt());
-
-        // MONOLITH: cross-domain entity traversal
-        dto.setOrderId(d.getOrder().getId());
-        dto.setOrderStatus(d.getOrder().getStatus().name());
-        dto.setCustomerId(d.getOrder().getCustomer().getId());
-        dto.setCustomerName(d.getOrder().getCustomer().getFirstName()
-                + " " + d.getOrder().getCustomer().getLastName());
-        dto.setRestaurantName(d.getOrder().getRestaurant().getName());
+        dto.setOrderId(d.getOrderId());
+        dto.setCustomerId(d.getCustomerId());
+        dto.setRestaurantName(d.getRestaurantName());   // snapshot
         return dto;
     }
 }

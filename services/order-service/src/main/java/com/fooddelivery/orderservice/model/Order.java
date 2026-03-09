@@ -63,6 +63,7 @@ public class Order {
     private Long restaurantId;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<OrderItem> items = new ArrayList<>();
 
 //    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
