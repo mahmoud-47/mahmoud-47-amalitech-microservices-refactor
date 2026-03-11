@@ -3,6 +3,8 @@
 Spring Boot microservices architecture decomposed from a monolith. Four independently deployable services communicating via REST and RabbitMQ.
 
 ---
+![architecture-diagram.png](docs/architecture-diagram.png)
+---
 
 ## Services
 
