@@ -5,6 +5,8 @@ Spring Boot microservices architecture decomposed from a monolith. Four independ
 ---
 ![architecture-diagram.png](docs/architecture-diagram.png)
 ---
+![img.png](docs/eureka-screen.png)
+---
 
 ## Services
 
