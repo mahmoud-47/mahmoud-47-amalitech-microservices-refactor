@@ -1,5 +1,6 @@
 package com.fooddelivery.restaurantservice.config;
 
+import com.fooddelivery.restaurantservice.client.CustomerClientErrorDecoder;
 import feign.codec.ErrorDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

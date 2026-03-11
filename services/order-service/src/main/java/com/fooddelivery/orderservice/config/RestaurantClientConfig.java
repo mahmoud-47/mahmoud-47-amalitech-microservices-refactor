@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class RestaurantClientConfig {
 
     @Bean
-    public ErrorDecoder errorDecoder() {
+    public ErrorDecoder RestaurantErrorDecoder() {
         return new RestaurantClientErrorDecoder();
     }
 }

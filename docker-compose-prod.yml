@@ -21,19 +21,19 @@ services:
     command: redis-server --requirepass redis123
 
   config-service:
-    image: username/config-service:latest
+    image:   mahmoudmhd47/config-service:latest
     ports:
       - "8888:8888"
 
   discovery-service:
-    image: username/discovery-service:latest
+    image:   mahmoudmhd47/discovery-service:latest
     ports:
       - "8761:8761"
     depends_on:
       - config-service
 
   api-gateway:
-    image: username/api-gateway:latest
+    image:   mahmoudmhd47/api-gateway:latest
     ports:
       - "8080:8080"
     depends_on:
@@ -41,7 +41,7 @@ services:
       - redis
 
   customer-service:
-    image: username/customer-service:latest
+    image:   mahmoudmhd47/customer-service:latest
     ports:
       - "8081:8081"
     depends_on:
@@ -49,7 +49,7 @@ services:
       - discovery-service
 
   restaurant-service:
-    image: username/restaurant-service:latest
+    image:   mahmoudmhd47/restaurant-service:latest
     ports:
       - "8082:8082"
     depends_on:
@@ -57,7 +57,7 @@ services:
       - discovery-service
 
   order-service:
-    image: username/order-service:latest
+    image:   mahmoudmhd47/order-service:latest
     ports:
       - "8083:8083"
     depends_on:
@@ -65,7 +65,7 @@ services:
       - rabbitmq
 
   delivery-service:
-    image: username/delivery-service:latest
+    image:   mahmoudmhd47/delivery-service:latest
     ports:
       - "8084:8084"
     depends_on:
